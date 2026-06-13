@@ -1,2 +1,2 @@
 # webhooks-project
-not AI generated. personally interacted with--learning webhooks to apply it to my job.
+not an AI generated code project. personally interacted with--learning webhooks to apply it to my job.
