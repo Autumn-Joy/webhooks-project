@@ -224,4 +224,7 @@ what options are avaiable from their payload?
 - but we're gonna stick with class because record is beyond the scope of this exercise
 
 
-- class DTOs with Lombok: @Data, @Builder, @
+- class DTOs with Lombok: @Data, @Builder, etc
+
+**jackson deserialization json to java-objects**
+- require @JsonProperty("full_name") annotations on the DTOs to match the names of the actual JSON being sent
