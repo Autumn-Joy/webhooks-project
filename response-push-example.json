@@ -1,0 +1,127 @@
+{
+  "title": "Webhook",
+  "description": "Webhooks for repositories.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier of the webhook.",
+      "type": "integer"
+    },
+    "name": {
+      "description": "The name of a valid service, use 'web' for a webhook.",
+      "type": "string"
+    },
+    "active": {
+      "description": "Determines whether the hook is actually triggered on pushes.",
+      "type": "boolean"
+    },
+    "events": {
+      "description": "Determines what events the hook is triggered for. Default: ['push'].",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "config": {
+      "title": "Webhook Configuration",
+      "description": "Configuration object of the webhook",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL to which the payloads will be delivered.",
+          "format": "uri"
+        },
+        "content_type": {
+          "type": "string",
+          "description": "The media type used to serialize the payloads. Supported values include `json` and `form`. The default is `form`."
+        },
+        "secret": {
+          "type": "string",
+          "description": "If provided, the `secret` will be used as the `key` to generate the HMAC hex digest value for [delivery signature headers](https://docs.github.com/webhooks/event-payloads/#delivery-headers)."
+        },
+        "insecure_ssl": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Determines whether the SSL certificate of the host for `url` will be verified when delivering payloads. Supported values include `0` (verification is performed) and `1` (verification is not performed). The default is `0`. **We strongly recommend not setting this to `1` as you are subject to man-in-the-middle and other attacks.**"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "test_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "ping_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "deliveries_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "last_response": {
+      "title": "Hook Response",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "code",
+        "status",
+        "message"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "url",
+    "type",
+    "name",
+    "active",
+    "events",
+    "config",
+    "ping_url",
+    "created_at",
+    "updated_at",
+    "last_response",
+    "test_url"
+  ]
+}
