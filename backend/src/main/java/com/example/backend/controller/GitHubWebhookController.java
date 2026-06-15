@@ -2,11 +2,10 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.GitHubPushEventRequest;
 import com.example.backend.dto.GitHubWebhookResponse;
+import com.example.backend.service.WebhookService;
 import com.example.backend.service.WebhookServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.Map;
 @Slf4j
 public class GitHubWebhookController {
 
-    private final WebhookServiceImpl webhookService;
+    private final WebhookService webhookService;
 
     public GitHubWebhookController(WebhookServiceImpl webhookService) {
         this.webhookService = webhookService;
