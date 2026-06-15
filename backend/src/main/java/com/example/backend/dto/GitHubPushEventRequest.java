@@ -3,9 +3,13 @@ package com.example.backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@NoArgsConstructor
 @Builder
+@ToString
 public class GitHubPushEventRequest {
 
     @JsonProperty("ref")
@@ -16,9 +20,6 @@ public class GitHubPushEventRequest {
 
     @JsonProperty("after")
     private String after;
-
-    @JsonProperty("git_url")
-    private String git_url;
 
     @JsonProperty("repository")
     private RepositoryDTO repository;

@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class GitHubPushEvent {
     @Id
     private Long id;
@@ -17,6 +18,6 @@ public class GitHubPushEvent {
     private String before;
     private String after;
     private String gitUrl;
-    private String repositoryName;
+    private String repositoryFullName;
     private String pusherName;
 }
