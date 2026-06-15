@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @lombok.extern.slf4j.Slf4j
 public class WebhookServiceImpl implements WebhookService{
 
-    private GitHubPushEventMapper gitHubPushEventMapper;
+    private final GitHubPushEventMapper gitHubPushEventMapper;
 
     public WebhookServiceImpl(GitHubPushEventMapper gitHubPushEventMapper) {
         this.gitHubPushEventMapper = gitHubPushEventMapper;
