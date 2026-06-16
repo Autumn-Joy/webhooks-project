@@ -26,6 +26,9 @@ public class GitHubWebhookController {
     @PostMapping("/github")
     public ResponseEntity<GitHubWebhookResponse> handleGitHubWebhook(@RequestHeader Map<String, String> headers,
                                                                      @RequestBody GitHubPushEventRequest body) {
+        String headerEventType = headers.get("X-Github-Event");
+
+        log.info("Received GitHub webhook event type: {}", headerEventType);
 
         webhookService.handleGithubWebhook(body);
 
