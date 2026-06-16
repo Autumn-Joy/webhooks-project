@@ -1,5 +1,9 @@
 # webhooks-project
-not an AI generated code project. personally interacted with--learning webhooks to apply it to my job.
+building out a simple GitHub integration for learning webhooks. on push, get a notification from GitHub with specific fields.
+
+This week at my job, we're building out an integration with GiveButter for payment verification. Since I've never touched webhooks before, this is a safe experiment before touching the code that will actually ship.
+
+(Even in a very agentic-focused team, where Claude is very involved, it's still extremely important to be able to verify the outputs, evaluate the structure, and overall have a strong foundation for what we're working on.)
 
 
 ## resources
@@ -22,13 +26,13 @@ Be able to clearly explain:
 
 - What a webhook is.
 - How GitHub delivers webhook events.
-
-- How Spring Boot receives POST requests.
 - How to parse JSON payloads.
 - How to read HTTP headers.
 
+
+Later:
 - How webhook signature verification works.
-- How to transform external API data into internal application models.
+- How to properly use DTOs for external data contracts
 
 ## core principles
 
@@ -86,16 +90,20 @@ Be able to clearly explain:
 
 - this is pub/sub without a broker, sent over http
 
-### building the consumer
+### building the "consumer" (i.e. spring boot controller)
 
-- ***key question***: how do i know where to start? how do i know what pieces are important and where?
-  - this is an integration between GitHub and my application. I'm not calling them, they're calling me. they're sending the request. I'm sending the response. they're gonna be sending ... what? how do i know?
+- ***key question***: how do i know where to start??
+  - how do i know what pieces are important and where?
+  - this is an integration between GitHub and my application.
+  - I'm not calling them, they're calling me.
+  - they're sending the request. I'm sending the response.
+  - but what shape is the data they're sending ... ? how do i know?
 
-  - *pull up the docs on "on push" webhook for GitHub*
+- *pull up the docs on "on push" webhook for GitHub*
   - https://docs.github.com/en/webhooks/webhook-events-and-payloads#push
     - this shows the fields required for the request.
   - https://docs.github.com/en/rest/repos/webhooks?apiVersion=2026-03-10#create-a-repository-webhook
-    - this shows the endpoint that GitHub will be making the `POST` call to:
+    - this shows the endpoint GitHub making a `POST` call to:
     - `/repos/{owner}/{repo}/hooks`
     ```
     curl -L \
@@ -106,7 +114,6 @@ Be able to clearly explain:
     https://api.github.com/repos/OWNER/REPO/hooks \
     -d '{"name":"web","active":true,"events":["push","pull_request"],"config":{"url":"https://example.com/webhook","content_type":"json","insecure_ssl":"0"}}'
     ```
-    - response schema: `response-push-example.json`
 
 - i can test the GitHub webhook on postman first
 
@@ -114,35 +121,32 @@ Be able to clearly explain:
 
 - since i know they're gonna be sending me a `POST`, I at least know I'll need a controller for that. we can start there.
 
-- USE RESPONSE ENTITY IN WRITING YOUR CONTROLLERS
+  - USE RESPONSE ENTITY IN WRITING YOUR CONTROLLERS for proper HTTP code responses
 
 - without nGrok, GitHub won't be able to reach localhost 8080
-
-
-- configured nGrok by installing, adding auth key, and accessing public url set to localhost8080. ensuring /health still works and returns "UP."
+  - configured nGrok by installing, adding auth key, and accessing public url set to localhost8080. ensuring /health still works and returns "UP."
 
 - added controller for GitHub webhook handler, super simple: just returns a 200 and says "webhook received."
-  - endpoint: /webhooks/github
-  - base url with ngrok: https://strudel-slab-line.ngrok-free.dev
+  - plot-twist you get to pick whatever endpoint you'd like them to send it to, then you register it with them
+  - endpoint: `/webhooks/github`
+  - base url with ngrok: `https://strudel-slab-line.ngrok-free.dev`
   - currenlty all this endpoint does is return "webhook received" to any request made to that endpoint. no security. no verification. at all.
 
-  - ***payload url***: https://strudel-slab-line.ngrok-free.dev/webhooks/github
+  - ***full payload url***: `https://strudel-slab-line.ngrok-free.dev/webhooks/github`
 
 
-- now we have a url to take to GitHub and set up the webhook with.
+> now we have a url to take to GitHub and set up the webhook with!!!
   - repo settings -> webhooks -> add new webhook
   - SET CONTENT TYPE TO application/JSON
   - configure SECRET
+  - secret is where we run into HMAC and security. we're gonna pause on that and come back to it after we get this flow going:
+    - receive webhook, parse JSON, log event.
+    - then we can cover: signature verification
 
-
-- secret is where we run into HMAC and security. we're gonna pause on that and come back to it after we get this flow going:
-  - receive webhook, parse JSON, log event.
-  - then we'll cover: signature verification
-
-![alt text](image-1.png)
+### handling webhook delivery
 
 - https://docs.github.com/en/webhooks/using-webhooks/handling-webhook-deliveries
-- this is an excellent doc for setting up a webhook project and learning it
+  - this is an excellent doc for setting up a webhook project and learning it
 
 > In order to handle webhook deliveries, you need to write code that will:
 > - Initialize your server to listen for requests to your webhook URL
@@ -163,14 +167,14 @@ Be able to clearly explain:
 
 
 
-- Github is now successfully sending the webhook to the configured url. but we're not receiving it correctly because our endpoint is very minimal.
+> Github is now successfully sending the webhook to our configured url. but we're not receiving it correctly because our endpoint is very minimal.
 
 - the missing pieces are @RequestHeader, @RequestBody
 
 
 - also very important: `X-Github-Event` in the headers tells us what event we're receiving
 
-- you can use Map<String, String> for logging the headers
+- we can use Map<String, String> for logging the headers
 
 - with Lombok's `@Slf4j`, a `log` object is immediately available with methods like `log.info()` and `log.error()`
 
@@ -184,13 +188,18 @@ logger.info("User " + username + " failed to log in from IP " + ipAddress);
 logger.info("User {} failed to log in from IP {}", username, ipAddress);
 ```
 
+### building out the DTO to pick "which fields do we want?"
+
 - now the endpoint is properly logging the event received. now we get to build the DTO that decides "what information from the massive payload do we actually want?"
 
 ```
     @PostMapping("/github")
     public ResponseEntity<GitHubWebhookResponse> handleGitHubWebhook(@RequestHeader Map<String, String> headers,
-                                                                     @RequestBody String body) {                   // will change to `GitHubRequestDTO`
+    @RequestBody String body
+    // will change to `GitHubRequestDTO`
+    ) {
         // TO DO: add method for async call to service to handle webhook processing
+
         log.info("Received webhook from GitHub, headers: {}", headers);
         log.info("Received webhook from GitHub, raw body: {}", body);
 
@@ -228,3 +237,23 @@ what options are avaiable from their payload?
 
 **jackson deserialization json to java-objects**
 - require @JsonProperty("full_name") annotations on the DTOs to match the names of the actual JSON being sent
+
+
+### result
+
+>now GitHub successfully sends event, controller calls async method "process event" from the service, which uses the mapper and Jackson to deserialize certain JSON fields into a new entity that's created (that could populate a DB in the future, etc) and the service currently logs the event instead of processing it in any other way.
+>
+> our endpoint sends back a quick success while the async method runs.
+
+## other steps to take (if i were buildng this out for prod)
+
+- **adding event routing to handle different types of events**
+- handle security concerns with HMAC etc
+
+## other reflections
+
+- this took about 4-6 hours for me to walk through, but gave me valuable context for how webhooks work, best practices, and now I'm taking that directly into a real-world application on the JSGo Penpal GiveButter integration for payment verification. Worth it.
+
+- use of AI:
+  - no prompting AI for code generating within this project, since it was strictly for learning.
+  - thorough use of AI for "this is the concept I'm trying to learn, what project would be helpful, what are the best practices, and what are some excellent docs on that" (like a powerful Google)
